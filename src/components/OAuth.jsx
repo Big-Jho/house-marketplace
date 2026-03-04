@@ -1,11 +1,11 @@
-import { auth } from "../firebase.config";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
-import { signInWithRedirect } from "firebase/auth";
-import { db } from "../firebase.config";
-import { GoogleAuthProvider } from "firebase/auth";
+import { useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import googleIcon from "../assets/svg/GoogleIcon.svg";
-import { useNavigate, useLocation } from "react-router-dom";
+
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { db, auth } from "../firebase.config";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 
 function OAuth() {
   const navigate = useNavigate();
@@ -13,26 +13,35 @@ function OAuth() {
 
   const onGoogleClick = async () => {
     try {
-      const auth = getAuth();
       const provider = new GoogleAuthProvider();
+
+      // 1. Trigger the popup
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Check for user
+      // 2. Check for user in Firestore
       const docRef = doc(db, "users", user.uid);
       const docSnap = await getDoc(docRef);
 
-      // If user, doesn't exist, create user
+      // 3. If user doesn't exist, create them
       if (!docSnap.exists()) {
-        await setDoc(doc(db, "users", user.uid), {
+        await setDoc(docRef, {
           name: user.displayName,
           email: user.email,
           timestamp: serverTimestamp(),
         });
       }
-      navigate("/");
+
+      toast.success("Login Successful");
+
+      // 4. Redirect to profile
+      navigate("/profile");
     } catch (error) {
-      toast.error("Could not authorize with Google");
+      console.error(error);
+      // Handle "Popup closed by user" specifically if you want
+      if (error.code !== "auth/popup-closed-by-user") {
+        toast.error("Could not authorize with Google");
+      }
     }
   };
 

@@ -42,9 +42,7 @@ function SignUp() {
 
       const user = userCredentials.user;
 
-      console.log(user);
-
-      updateProfile(auth.currentUser, { displayName: name });
+      await updateProfile(auth.currentUser, { displayName: name });
 
       const formDataCopy = { ...formData };
       delete formDataCopy.password;

@@ -26,7 +26,6 @@ function SignIn() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
 
     try {
       const userCredentials = await signInWithEmailAndPassword(
