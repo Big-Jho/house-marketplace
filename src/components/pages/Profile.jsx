@@ -1,10 +1,12 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { auth } from "../../firebase.config";
 import { updateDoc, doc } from "firebase/firestore";
 import { db } from "../../firebase.config";
 import { updateProfile } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import homeIcon from "../../assets/svg/homeIcon.svg";
+import arrowRight from "../../assets/svg/keyboardArrowRightIcon.svg";
 
 function Profile() {
   const navigate = useNavigate();
@@ -65,7 +67,7 @@ function Profile() {
       </header>
 
       <main className="mt-10">
-        <div className="profileDetailsHeader">
+        <div className="profileDetailsHeader mx-auto">
           <p className="profileDetailsText">Personal Details</p>
           <p
             className="changePersonalDetails"
@@ -78,7 +80,7 @@ function Profile() {
           </p>
         </div>
 
-        <div className="profileCard mt-4">
+        <div className="profileCard mt-4 mx-auto">
           <form className="space-y-4">
             <input
               type="text"
@@ -99,6 +101,12 @@ function Profile() {
             />
           </form>
         </div>
+
+        <Link to="/create-listing" className="createListing py-4 mx-auto">
+          <img src={homeIcon} alt="home" />
+          <p>Sell or rent your home</p>
+          <img src={arrowRight} alt="arrow right" />
+        </Link>
       </main>
     </div>
   );

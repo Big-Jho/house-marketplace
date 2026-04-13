@@ -1,6 +1,8 @@
+import React from "react";
 import { db } from "../../firebase.config";
 import {
   getDocs,
+  doc,
   collection,
   query,
   where,
@@ -8,19 +10,17 @@ import {
   limit,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Spinner from "../Spinner";
 import ListingItem from "./ListingItem";
 
-function Offers({}) {
+function Categories({}) {
   const [loading, setLoading] = useState(true);
   const [listings, setListings] = useState(null);
+  // const [shareLinkCopied, setShareLinkCopied] = useState(false);
 
-  // const [searchParams, setSearchParams] = useSearchParams();
-
-  // console.log(searchParams.get("id"));
-
+  const params = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,7 +32,7 @@ function Offers({}) {
         // Create a query
         const q = query(
           listingsRef,
-          where("offer", "==", true),
+          where("type", "==", params.categoryName),
           orderBy("timestamp", "desc"),
           limit(10),
         );
@@ -51,6 +51,8 @@ function Offers({}) {
 
         setListings(listings);
         setLoading(false);
+
+        // console.log(listings);
       } catch (error) {
         console.log(error);
         toast.error("Could not fetch listings");
@@ -58,19 +60,23 @@ function Offers({}) {
     };
 
     fetchListings();
-  }, []);
+  }, [navigate, params.listingId]);
 
   return (
     <div className="category">
       <header>
-        <p className="pageHeader">Offers for You!</p>
+        <p className="pageHeader">
+          {params.categoryName === "rent"
+            ? "Places for rent"
+            : "Places for sale"}
+        </p>
       </header>
 
       {loading ? (
         <Spinner />
       ) : listings && listings.length > 0 ? (
         <main className="mt-10">
-          <ul className="categoryListings gap-y-8">
+          <ul className="categoryListings">
             {listings.map((listing) => (
               <ListingItem
                 key={listing.id}
@@ -81,10 +87,10 @@ function Offers({}) {
           </ul>
         </main>
       ) : (
-        <p>No Available Offers</p>
+        <p>No listings for {params.categoryName}</p>
       )}
     </div>
   );
 }
 
-export default Offers;
+export default Categories;
