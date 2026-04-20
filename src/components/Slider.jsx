@@ -7,15 +7,10 @@ import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { db } from "../firebase.config";
 
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination, A11y, Autoplay } from "swiper/modules";
+import { A11y, Autoplay } from "swiper/modules";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "swiper/css";
-
-// import SwiperCore, { Navigation, Pagination, Scrollbar, A11y } from "swiper";
-// import { Swiper, SwiperSlide } from "swiper/react";
-// import "swiper/swiper-bundle.css";
-// SwiperCore.use([Navigation, Pagination, Scrollbar, A11y]);
 
 function Slider() {
   const [loading, setLoading] = useState(true);
@@ -39,7 +34,6 @@ function Slider() {
         });
       });
 
-      console.log(listings);
       setListings(listings);
       setLoading(false);
     };
@@ -82,12 +76,13 @@ function Slider() {
                 }}
                 className="swiperSlideDiv"
               >
-                <div className="absolute bottom-0 flex flex-col gap-1 items-start justify-end w-full h-full">
-                  <p className="swiperSlidePrice ml-1">
+                <div className="absolute bottom-10 flex flex-col gap-4 items-start justify-end w-full h-full">
+                  <p className="swiperSlideText">{data.name}</p>
+
+                  <p className="swiperSlidePrice ml-2">
                     ${data.discountedPrice ?? data.regularPrice}{" "}
                     {data.type === "rent" && "/ month"}
                   </p>
-                  <p className="swiperSlideText">{data.name}</p>
                 </div>
               </div>
             </SwiperSlide>

@@ -13,6 +13,7 @@ import SignIn from "./components/pages/SignIn";
 import ForgotPassword from "./components/pages/ForgotPassword";
 import Contact from "./components/pages/Contact";
 import CreateListing from "./components/pages/CreateListing";
+import EditListing from "./components/pages/EditListing";
 import Footer from "./components/Footer";
 import PrivateRoute from "./components/PrivateRoute";
 
@@ -38,6 +39,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/contact/:landlordId" element={<Contact />} />
           <Route path="/create-listing" element={<CreateListing />} />
+          <Route path="/edit-listing/:listingId" element={<EditListing />} />
         </Routes>
 
         <Footer />

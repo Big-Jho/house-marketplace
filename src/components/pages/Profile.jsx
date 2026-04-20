@@ -1,16 +1,30 @@
 import { useNavigate, Link } from "react-router-dom";
 import { auth } from "../../firebase.config";
-import { updateDoc, doc } from "firebase/firestore";
+import {
+  updateDoc,
+  doc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  collection,
+  deleteDoc,
+  startAfter,
+} from "firebase/firestore";
 import { db } from "../../firebase.config";
 import { updateProfile } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import ListingItem from "./ListingItem";
 import homeIcon from "../../assets/svg/homeIcon.svg";
 import arrowRight from "../../assets/svg/keyboardArrowRightIcon.svg";
+import Spinner from "../Spinner";
 
 function Profile() {
   const navigate = useNavigate();
 
+  const [loading, setLoading] = useState(true);
+  const [listings, setListings] = useState(null);
   const [changeDetails, setChangeDetails] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -44,9 +58,8 @@ function Profile() {
       toast.success("Profile Updated");
     } catch (error) {
       console.log(error.message);
+      toast.error("Could not update profile");
     }
-
-    console.log(123);
   };
 
   const onChange = (e) => {
@@ -55,6 +68,50 @@ function Profile() {
       [e.target.id]: e.target.value,
     }));
   };
+
+  const onDelete = async (listingId) => {
+    if (window.confirm("Do you really want to delete this Listing?")) {
+      await deleteDoc(doc(db, "listings", listingId));
+
+      const updatedListings = listings.filter(
+        (listing) => listing.id !== listingId,
+      );
+      setListings(updatedListings);
+    }
+  };
+
+  const onEdit = async (listingId) => {
+    navigate(`/edit-listing/${listingId}`);
+  };
+
+  useEffect(() => {
+    const fetchListings = async () => {
+      const listingRef = collection(db, "listings");
+      const q = query(
+        listingRef,
+        where("userRef", "==", auth.currentUser.uid),
+        orderBy("timestamp", "desc"),
+      );
+
+      const querySnap = await getDocs(q);
+
+      let listings = [];
+
+      querySnap.forEach((listing) => {
+        return listings.push({
+          id: listing.id,
+          data: listing.data(),
+        });
+      });
+
+      setListings(listings);
+      setLoading(false);
+    };
+
+    fetchListings();
+  }, [auth.currentUser.uid]);
+
+  if (loading) return <Spinner />;
 
   return (
     <div className="profile">
@@ -67,7 +124,7 @@ function Profile() {
       </header>
 
       <main className="mt-10">
-        <div className="profileDetailsHeader mx-auto">
+        <div className="profileDetailsHeader container-width mx-auto">
           <p className="profileDetailsText">Personal Details</p>
           <p
             className="changePersonalDetails"
@@ -80,7 +137,7 @@ function Profile() {
           </p>
         </div>
 
-        <div className="profileCard mt-4 mx-auto">
+        <div className="profileCard container-width mt-4 mx-auto">
           <form className="space-y-4">
             <input
               type="text"
@@ -102,11 +159,30 @@ function Profile() {
           </form>
         </div>
 
-        <Link to="/create-listing" className="createListing py-4 mx-auto">
+        <Link
+          to="/create-listing"
+          className="createListing container-width py-4 mx-auto"
+        >
           <img src={homeIcon} alt="home" />
           <p>Sell or rent your home</p>
           <img src={arrowRight} alt="arrow right" />
         </Link>
+
+        {listings && (
+          <div className="container-width mx-auto">
+            <p className="listingText">Your Listings</p>
+
+            {listings.map((listing) => (
+              <ListingItem
+                key={listing.id}
+                listing={listing.data}
+                id={listing.id}
+                onDelete={() => onDelete(listing.id)}
+                onEdit={() => onEdit(listing.id)}
+              />
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );

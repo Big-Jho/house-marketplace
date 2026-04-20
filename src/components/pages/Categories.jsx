@@ -8,6 +8,7 @@ import {
   where,
   orderBy,
   limit,
+  startAfter,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -18,7 +19,7 @@ import ListingItem from "./ListingItem";
 function Categories({}) {
   const [loading, setLoading] = useState(true);
   const [listings, setListings] = useState(null);
-  // const [shareLinkCopied, setShareLinkCopied] = useState(false);
+  const [lastFechedListing, setLastFechedListing] = useState(null);
 
   const params = useParams();
   const navigate = useNavigate();
@@ -40,6 +41,10 @@ function Categories({}) {
         // Execute query
         const querySnap = await getDocs(q);
 
+        const lastVisible = querySnap.docs[querySnap.docs.length - 1];
+
+        setLastFechedListing(lastVisible);
+
         const listings = [];
 
         querySnap.forEach((doc) => {
@@ -51,16 +56,52 @@ function Categories({}) {
 
         setListings(listings);
         setLoading(false);
-
-        // console.log(listings);
       } catch (error) {
-        console.log(error);
         toast.error("Could not fetch listings");
       }
     };
 
     fetchListings();
   }, [navigate, params.listingId]);
+
+  // Pagination / Load More
+  const onFetchMoreListings = async () => {
+    try {
+      // Get reference
+      const listingsRef = collection(db, "listings");
+
+      // Create a query
+      const q = query(
+        listingsRef,
+        where("type", "==", params.categoryName),
+        orderBy("timestamp", "desc"),
+        startAfter(lastFechedListing),
+        limit(10),
+      );
+
+      // Execute query
+      const querySnap = await getDocs(q);
+
+      const lastVisible = querySnap.docs[querySnap.docs.length - 1];
+
+      setLastFechedListing(lastVisible);
+
+      const listings = [];
+
+      querySnap.forEach((doc) => {
+        return listings.push({
+          id: doc.id,
+          data: doc.data(),
+        });
+      });
+
+      setListings((prevState) => [...prevState, ...listings]);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      toast.error("Could not fetch more listings");
+    }
+  };
 
   return (
     <div className="category">
@@ -85,6 +126,14 @@ function Categories({}) {
               />
             ))}
           </ul>
+
+          <br />
+
+          {lastFechedListing && (
+            <p className="loadMore" onClick={onFetchMoreListings}>
+              Load More
+            </p>
+          )}
         </main>
       ) : (
         <p>No listings for {params.categoryName}</p>
