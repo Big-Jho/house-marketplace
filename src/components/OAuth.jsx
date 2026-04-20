@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
-import googleIcon from "../assets/svg/GoogleIcon.svg";
+import googleIcon from "../assets/svg/googleIcon.svg";
 
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { db, auth } from "../firebase.config";
